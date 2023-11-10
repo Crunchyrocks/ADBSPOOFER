@@ -6,7 +6,7 @@ This Requires a rooted phone with safteynet passing.
 
 INSTRUCTIONS:
 
-Install python > googlle how to use pyisntaller for python and use "pyinstaller Xspoofer.py --onefile -w" to convert it to an exe. 
+Install python > googlle how to use pyisntaller for python and use "pyinstaller Xspoofer.py --onefile" to convert it to an exe. 
 
 
 Once done put XSPOOFER in a  folder named XSPOOFER make a sub folder named "DATA" put " app.js , SERVER-WIRELESS.js , Index.html , osm_map.html , joystick.png , and package.json" in the folder
