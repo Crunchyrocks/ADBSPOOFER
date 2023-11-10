@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <style>
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        </style>
+        <style>
+            #search-overlay {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: white;
+                padding: 10px;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                z-index: 1000;
+            }
+            #search-input {
+                width: 200px;
+                padding: 5px;
+                border: 1px solid #ccc;
+            }
+            #search-button {
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="folium-map" id="map"></div>
+        <!-- Search overlay -->
+        <div id="search-overlay">
+            <input type="text" id="search-input" placeholder="Enter Coords (51.5054,-0.1258)">
+            <button id="search-button">Go</button>
+        </div>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <script>
+        var map = L.map(
+            "map",
+            {
+                center: [49.493137, 10.973439],
+                crs: L.CRS.EPSG3857,
+                zoom: 5,
+                zoomControl: true,
+                preferCanvas: false,
+            }
+        );
+
+        var tileLayer = L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                attribution: "Data by &copy; <a target='_blank' href='http://openstreetmap.org'>OpenStreetMap</a>, under <a target='_blank' href='http://www.openstreetmap.org/copyright'>ODbL</a>.",
+                detectRetina: false,
+                maxNativeZoom: 18,
+                maxZoom: 18,
+                minZoom: 0,
+                noWrap: false,
+                opacity: 1,
+                subdomains: "abc",
+                tms: false
+            }
+        ).addTo(map);
+
+        var marker = null;
+
+        map.on('click', function(event) {
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            marker = L.marker(event.latlng).addTo(map);
+
+            var latlng = event.latlng;
+            if (latlng) {
+                var roundedLat = latlng.lat.toFixed(6);
+                var roundedLng = latlng.lng.toFixed(6);
+                console.log('Coordinates selected: ' + roundedLat + ', ' + roundedLng);
+                document.getElementById("search-input").value = roundedLat + ', ' + roundedLng; // Populate the search bar
+                sendCoordinatesToServer(roundedLat, roundedLng); // Send coordinates to the server
+            }
+        });
+
+        // Function to send coordinates to the server
+        function sendCoordinatesToServer(latitude, longitude) {
+            var apiUrl = 'http://localhost:3000/send-coordinates';
+            var data = {
+                lat: latitude,
+                lng: longitude
+            };
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', apiUrl, true);
+            xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        console.log('Coordinates sent to the server');
+                    } else {
+                        console.error('Error sending coordinates to the server');
+                    }
+                }
+            };
+            xhr.send(JSON.stringify(data));
+        }
+    </script>
+    <script>
+        // Event listener for the search button
+        document.getElementById("search-button").addEventListener("click", function() {
+            var input = document.getElementById("search-input").value;
+            var coordinates = input.split(",");
+            if (coordinates.length === 2) {
+                var latitude = parseFloat(coordinates[0]);
+                var longitude = parseFloat(coordinates[1]);
+                if (!isNaN(latitude) && !isNaN(longitude) && latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180) {
+                    map.setView([latitude, longitude], 10);
+                    if (marker) {
+                        map.removeLayer(marker);
+                    }
+                    marker = L.marker([latitude, longitude]).addTo(map);
+                    sendCoordinatesToServer(latitude, longitude); // Send coordinates to the server
+                } else {
+                    alert("Invalid coordinates. Please enter valid latitude and longitude.");
+                }
+            } else {
+                alert("Invalid input format. Please use 'latitude, longitude' format.");
+            }
+        });
+    </script>
+</html>
