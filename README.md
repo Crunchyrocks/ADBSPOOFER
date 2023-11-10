@@ -3,6 +3,8 @@ A Computer Location Spoofer for Pokémon Go. Communicates with GPS Joystick by t
 
 This Requires a rooted phone with safteynet passing. 
 
+This uses wireless debugging for communications "adb conenct ip"
+
 
 INSTRUCTIONS:
 
